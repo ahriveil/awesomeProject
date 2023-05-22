@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor 资源组成员
+participant 资源申请模块
+participant 审批中心
+participant oa审批流
+
+group 发起小黄条的审批
+    资源组成员 -> 资源申请模块: 申请小黄条的资源，发起表单
+    资源申请模块 -> 审批中心: 发起资源审批，提交oa需要的详情页字段
+    审批中心 -> oa审批流: 发起审批流程，填充审批字段
+    oa审批流 -> 资源组成员: 审批详情页展示新增的信息
+    资源申请模块 -> 资源组成员: 展示新增的信息
+
+end
+
+
+@enduml

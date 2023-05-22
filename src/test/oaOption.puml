@@ -1,0 +1,113 @@
+@startuml
+participant 立项
+participant 审批中心
+participant oa审批
+participant 音乐部门
+participant 游戏部门
+participant 资源组审批
+participant 资源组负责人
+participant 特殊审批人
+participant 财务审批
+participant 立项抄送人
+participant hrcore
+
+立项 -> 审批中心 : 发起立项审批
+立项 -> hrcore : 查询抄送人的AD账号
+activate 立项
+立项 -> 立项抄送人 : 设置抄送人
+deactivate 立项
+
+group 业务方审批
+
+审批中心 -> oa审批 : 发起审批流程
+
+    alt 资源申请涉及音乐部门
+
+        oa审批 -> 音乐部门 : 审批流程开始
+        activate 音乐部门
+            loop 循环至一级部门leader并审批通过
+                音乐部门 -> 音乐部门 : 开始部门leader循环审批
+            end
+        activate 音乐部门
+        音乐部门 -> 资源组审批 : 资源组负责人审批(白名单配置)
+        deactivate 音乐部门
+    else 资源申请涉及游戏部门
+
+        oa审批 -> 游戏部门 : 审批流程开始
+        activate 游戏部门
+            loop 循环至一级部门leader并审批通过
+                游戏部门 -> 游戏部门 : 开始部门leader循环审批
+            end
+        activate 游戏部门
+        游戏部门 -> 资源组审批 : 资源组负责人审批(白名单配置)
+        deactivate 游戏部门
+
+    else 主站运营中心
+        oa审批 ->
+    end
+end
+
+group 资源组审批
+
+    音乐部门 -> 资源组审批 : 流转到资源组审批
+    activate 资源组审批
+    资源组审批 -> hrcore : 读取组别信息获取审批人信息
+    activate hrcore
+    hrcore -> hrcore : 查询人员信息和部门信息
+    return 返回人员信息和部门信息
+
+    资源组审批 -> 资源组审批 : 审批通过
+
+end
+
+group 资源组负责人审批
+    资源组审批 -> 资源组负责人 : 审批流转
+    deactivate 资源组审批
+    activate 资源组负责人
+    资源组负责人 -> 资源组负责人 : 负责人审批(走白名单配置)
+
+end
+
+group 根据金额阶梯进行审批
+    资源组负责人 -> 特殊审批人 : 分50w/100w/200w审批
+    deactivate 资源组负责人
+    activate 特殊审批人
+    group 大于0,小于50w
+        特殊审批人 -> 特殊审批人 : 波吉
+    end
+    group 预算金额小于50w
+        特殊审批人 -> 特殊审批人 : 牧舟 or Shane
+    end
+    group 大于50w,小于100w
+        特殊审批人 -> 特殊审批人 : sevenyywang
+    end
+    group 大于100w,小于200w
+        特殊审批人 -> 特殊审批人 : Pieta or Celia or 弗丁
+    end
+
+end
+
+group 财务分级审批
+    特殊审批人 -> 财务审批 : 财务审批
+    deactivate 特殊审批人
+    activate 财务审批
+    财务审批 -> 财务审批 : 财务初级并列审批
+    alt 预算大于等于200w审批
+        财务审批 -> 财务审批 : Pieta
+    else 预算大于100w审批
+        财务审批 -> 财务审批 : 小作
+    end
+end
+
+财务审批 -> oa审批 : 立项审批通过
+deactivate 财务审批
+oa审批 -> 审批中心 : 立项审批通过
+审批中心 -> 立项 : 立项审批通过
+
+group 项目撤回
+    立项 -> 审批中心 : 项目撤回终止审批
+    审批中心 -> oa审批 : 废弃审批流程
+    oa审批 -> 立项 : 撤销立项操作
+end
+
+@enduml

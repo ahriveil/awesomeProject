@@ -1,0 +1,33 @@
+@startuml
+
+participant 科目和资源包
+participant hrcore
+participant hrcore订阅通知
+participant 科目信息查询接口
+
+group 创建科目信息
+    科目和资源包 -> hrcore : 通过前端组件获取oa架构一二级部门信息
+    hrcore --> 科目和资源包 : 返回一二级部门的部门id
+    group 获取部门负责人
+        科目和资源包 -> hrcore : 请求负责人信息
+        activate 科目和资源包
+        hrcore --> 科目和资源包 : 获取到默认的二级部门负责人
+        deactivate 科目和资源包
+    end
+    科目和资源包 -> 科目和资源包 : 填写一二级科目信息，映射一二级部门信息
+    loop 批量添加三级科目信息
+        科目和资源包 -> 科目和资源包 : 自定义三级科目信息（可配置多条）
+        activate 科目和资源包
+        deactivate 科目和资源包
+    end
+
+end
+
+group hrcore订阅通知
+    hrcore订阅通知 -> 科目和资源包 : 部门和人员变更回调
+    activate 科目和资源包
+    科目和资源包 -> 科目和资源包 : 更新部门和人员信息
+    deactivate 科目和资源包
+end
+
+@enduml
